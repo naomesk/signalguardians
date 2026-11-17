@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PriorityLink | The most critical message always gets through</title>
+<meta name="description" content="PriorityLink is a priority-based spacecraft communication system on FreeRTOS. Team 3 Signal Guardian, OS PBL Task 1.">
+<style>
+:root {
+  --navy: #14367a;
+  --navy-dark: #0c2354;
+  --blue: #2752ab;
+  --coral: #ff685b;
+  --ink: #14367a;
+  --bg: #f5f7fc;
+  --card: #ffffff;
+  --muted: #5b6b8c;
+  --line: #dbe2f2;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.6;
+}
+a { color: var(--blue); }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+
+/* Header */
+header.nav {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--navy-dark); color: #fff;
+}
+header.nav .wrap { display: flex; align-items: center; justify-content: space-between; min-height: 56px; gap: 16px; flex-wrap: wrap; }
+.brand { font-weight: 800; letter-spacing: .2px; color: #fff; text-decoration: none; }
+.brand span { color: var(--coral); }
+nav a { color: #cdd8f3; text-decoration: none; margin-left: 16px; font-size: .95rem; }
+nav a:hover { color: #fff; }
+
+/* Hero */
+.hero { background: linear-gradient(160deg, var(--navy) 0%, var(--blue) 100%); color: #fff; padding: 84px 0 72px; }
+.hero .eyebrow { color: var(--coral); font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; font-size: .85rem; }
+.hero h1 { font-size: clamp(2.2rem, 6vw, 3.8rem); line-height: 1.1; margin: 10px 0 14px; }
+.hero p.lead { font-size: 1.2rem; max-width: 640px; color: #dfe7fb; margin: 0 0 28px; }
+.bar { width: 90px; height: 6px; background: var(--coral); border-radius: 3px; margin: 18px 0 22px; }
+.btn { display: inline-block; padding: 12px 22px; border-radius: 8px; font-weight: 700; text-decoration: none; margin: 0 10px 10px 0; }
+.btn.primary { background: var(--coral); color: #fff; }
+.btn.ghost { border: 2px solid #fff; color: #fff; }
+
+/* Sections */
+section { padding: 64px 0; }
+section.alt { background: #fff; }
+h2 { font-size: 1.9rem; margin: 0 0 8px; }
+h2::after { content: ""; display: block; width: 64px; height: 5px; background: var(--coral); border-radius: 3px; margin-top: 10px; }
+.sub { color: var(--muted); margin: 14px 0 28px; max-width: 720px; }
+.grid { display: grid; gap: 18px; }
+.g2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.g3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+.card h3 { margin: 0 0 8px; color: var(--coral); font-size: 1.15rem; }
+.card ul { margin: 8px 0 0; padding-left: 20px; }
+.tag { display: inline-block; font-size: .8rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; color: #fff; }
+.t-em { background: #d6322a; } .t-sys { background: #e08a00; } .t-nor { background: #2f7d4f; }
+
+/* Tables */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+table { width: 100%; border-collapse: collapse; min-width: 560px; }
+th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { background: var(--navy); color: #fff; font-weight: 700; }
+tr:last-child td { border-bottom: 0; }
+
+/* Flow diagram */
+.flow { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr; gap: 10px; align-items: center; }
+.node { background: var(--blue); color: #fff; padding: 14px; border-radius: 12px; text-align: center; font-weight: 700; }
+.node small { display: block; font-weight: 400; color: #dfe7fb; }
+.arrow { color: var(--coral); font-size: 1.6rem; text-align: center; }
+.senders { display: grid; gap: 8px; }
+.retry { margin-top: 14px; text-align: center; }
+.retry .node { display: inline-block; background: var(--navy); padding: 12px 22px; }
+@media (max-width: 760px) {
+  .flow { grid-template-columns: 1fr; }
+  .arrow { transform: rotate(90deg); }
+}
+
+/* Demo */
+.controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+.controls button { font: inherit; font-weight: 700; padding: 10px 16px; border-radius: 8px; border: 2px solid var(--blue); background: #fff; color: var(--blue); cursor: pointer; }
+.controls button.go { background: var(--coral); border-color: var(--coral); color: #fff; }
+.controls button.reset { border-color: var(--muted); color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 36px; }
+.chip { font-size: .8rem; font-weight: 700; color: #fff; padding: 4px 9px; border-radius: 6px; }
+.chip.E { background: #d6322a; } .chip.S { background: #e08a00; } .chip.N { background: #2f7d4f; }
+.note { color: var(--muted); font-size: .9rem; margin-top: 14px; }
+.panel-title { font-weight: 700; margin: 0 0 8px; }
+.pos { font-weight: 700; color: var(--coral); }
+
+/* Footer */
+footer { background: var(--navy-dark); color: #cdd8f3; padding: 36px 0; font-size: .95rem; }
+footer a { color: #fff; }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top">Priority<span>Link</span></a>
+    <nav>
+      <a href="#problem">Problem</a>
+      <a href="#solution">Solution</a>
+      <a href="#how">How it works</a>
+      <a href="#demo">Demo</a>
+      <a href="#evaluation">Evaluation</a>
+      <a href="#team">Team</a>
+      <a href="#schedule">Schedule</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">OS PBL class &middot; Task 1: Spacecraft Communication System</div>
+    <h1>PriorityLink</h1>
+    <div class="bar"></div>
+    <p class="lead">Making sure the most critical message always gets through. A priority-based communication system built on FreeRTOS.</p>
+    <a class="btn primary" href="#demo">Try the idea</a>
+    <a class="btn ghost" href="#how">How it works</a>
+    <!-- TODO: replace with the real repository link -->
+    <a class="btn ghost" href="https://github.com/">GitHub repository</a>
+  </div>
+</section>
+
+<section id="problem">
+  <div class="wrap">
+    <h2>The problem</h2>
+    <p class="sub">During a docking maneuver, a spacecraft receives a flood of routine telemetry just as a critical fault alarm arrives. The alarm must not wait behind the data.</p>
+    <div class="grid g2">
+      <div class="card">
+        <h3>Limits of existing approaches</h3>
+        <p>Generic messaging treats all traffic alike, so urgent messages can be delayed or lost under load, putting crew and mission at risk.</p>
+      </div>
+      <div class="card">
+        <h3>Core issue</h3>
+        <ul>
+          <li>Urgent alarms can be delayed or lost under load</li>
+          <li>Routine telemetry competes for the same resources</li>
+          <li>The operating system decides who gets through</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="solution" class="alt">
+  <div class="wrap">
+    <h2>Our solution</h2>
+    <p class="sub">PriorityLink ranks every message by urgency and lets the operating system make sure the important ones go first.</p>
+    <div class="grid g3">
+      <div class="card">
+        <h3>1. Ingest</h3>
+        <ul>
+          <li>Emergency, System and Normal sources</li>
+          <li>Each stream has its own priority</li>
+          <li>Payloads encrypted before sending</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>2. Deliver reliably</h3>
+        <ul>
+          <li>Priority-based task scheduling</li>
+          <li>Queues absorb traffic bursts</li>
+          <li>Automatic retry with backoff</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>3. Monitor and trace</h3>
+        <ul>
+          <li>Timestamped log of every event</li>
+          <li>Live queue and backlog view</li>
+          <li>Failure reports for audits</li>
+        </ul>
+      </div>
+    </div>
+    <h3 style="margin:36px 0 12px">Message types</h3>
+    <div class="tablewrap">
+      <table>
+        <tr><th>Type</th><th>Example</th><th>Priority</th><th>Processing rule</th></tr>
+        <tr><td><span class="tag t-em">Emergency</span></td><td>Fault alarm, abort command</td><td>High</td><td>Processed first, immediate retry</td></tr>
+        <tr><td><span class="tag t-sys">System</span></td><td>Subsystem status and health</td><td>Medium</td><td>Processed after Emergency messages</td></tr>
+        <tr><td><span class="tag t-nor">Normal</span></td><td>Routine telemetry, general messages</td><td>Low</td><td>Processed when the CPU is free; may wait in the queue</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <h2>How it works</h2>
+    <p class="sub">Senders put messages into a shared queue. The receiver always takes the most urgent one first. Failed deliveries are retried, and every step is logged.</p>
+    <div class="card">
+      <div class="flow">
+        <div class="senders">
+          <div class="node">Emergency Sender<small>highest priority</small></div>
+          <div class="node">System Sender<small>medium priority</small></div>
+          <div class="node">Normal Sender<small>lowest priority</small></div>
+        </div>
+        <div class="arrow">&rarr;</div>
+        <div class="node">Message Queue<small>length and backlog observed</small></div>
+        <div class="arrow">&rarr;</div>
+        <div class="node">Receiver Task<small>processes by priority</small></div>
+        <div class="arrow">&rarr;</div>
+        <div class="node">Logger Task<small>timestamped log output</small></div>
+      </div>
+      <div class="retry">
+        <div class="arrow">&#8635; delivery failed &middot; resend after backoff</div>
+        <div class="node">Retry and Backoff Task</div>
+      </div>
+      <p class="note">Payloads are protected with XOR encryption before queueing. Every step is logged.</p>
+    </div>
+    <div class="grid g3" style="margin-top:18px">
+      <div class="card"><h3>Scheduling</h3><p>Task priorities decide which task runs first.</p></div>
+      <div class="card"><h3>IPC</h3><p>Queues carry messages between tasks.</p></div>
+      <div class="card"><h3>Synchronization</h3><p>No lost or corrupted data.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="demo" class="alt">
+  <div class="wrap">
+    <h2>Demo</h2>
+    <p class="sub">An illustration of the idea, not the FreeRTOS run. Add messages, then process them to see the order with and without priorities. The real simulator demo will be linked here later.</p>
+    <div class="controls">
+      <button type="button" id="addN">Add 10 Normal</button>
+      <button type="button" id="addS">Add System</button>
+      <button type="button" id="addE">Add Emergency</button>
+      <button type="button" class="go" id="run">Process messages</button>
+      <button type="button" class="reset" id="reset">Reset</button>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <p class="panel-title">Arrival order (queue)</p>
+        <div class="chips" id="arrival"></div>
+      </div>
+      <div class="card">
+        <p class="panel-title">Emergency position</p>
+        <p id="verdict" style="margin:0">Add some messages to start.</p>
+      </div>
+      <div class="card">
+        <p class="panel-title">Without priorities (first in, first out)</p>
+        <div class="chips" id="fifo"></div>
+      </div>
+      <div class="card">
+        <p class="panel-title">With PriorityLink (Emergency, then System, then Normal)</p>
+        <div class="chips" id="prio"></div>
+      </div>
+    </div>
+    <p class="note"><span class="chip E">E</span> Emergency &nbsp; <span class="chip S">S</span> System &nbsp; <span class="chip N">N</span> Normal</p>
+  </div>
+</section>
+
+<section id="evaluation">
+  <div class="wrap">
+    <h2>How we evaluate it</h2>
+    <p class="sub">These targets are proposals and will be tuned after the first experiments. Results will be added here.</p>
+    <div class="tablewrap">
+      <table>
+        <tr><th>Area</th><th>Target</th><th>How we measure</th></tr>
+        <tr><td>Priority correctness</td><td>Emergency processed before Normal in 100% of test runs</td><td>Compare message order in timestamped logs over repeated runs</td></tr>
+        <tr><td>Responsiveness</td><td>Emergency delay of 10 ms or less with 100 Normal messages queued</td><td>Send-to-receive time at low and high load</td></tr>
+        <tr><td>Delivery reliability</td><td>99%+ delivered within 3 retries, no silent loss</td><td>Inject failures; compare messages sent, delivered and logged</td></tr>
+        <tr><td>System stability</td><td>No queue overflow or task starvation under peak load</td><td>Peak queue depth, stack high-water marks, Normal-message wait time</td></tr>
+      </table>
+    </div>
+    <!-- TODO: add results table and charts after the experiments -->
+  </div>
+</section>
+
+<section id="goals" class="alt">
+  <div class="wrap">
+    <h2>Goals and scope</h2>
+    <div class="grid g3" style="margin-top:24px">
+      <div class="card">
+        <h3>Technical goals</h3>
+        <ul>
+          <li>Emergency first in 100% of test runs</li>
+          <li>99%+ delivered within 3 retries</li>
+          <li>100% of failures logged</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Learning goals</h3>
+        <ul>
+          <li>Understand scheduling and IPC in a real RTOS</li>
+          <li>Explain design limits and trade-offs</li>
+          <li>Practice teamwork and documentation</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Constraints</h3>
+        <ul>
+          <li>FreeRTOS on a simulator, no real hardware</li>
+          <li>Simulated messages and link, no real radio</li>
+          <li>XOR is a demo cipher, not flight-grade security</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="team">
+  <div class="wrap">
+    <h2>Team 3: Signal Guardian</h2>
+    <p class="sub">Six members, each owning a part of the system.</p>
+    <div class="tablewrap">
+      <table>
+        <tr><th>Member</th><th>Technical role (Task 1)</th><th>Sub-role</th></tr>
+        <tr><td>Woudneh Naomi Eskinder</td><td>Queue-based communication; Integration</td><td>Leader</td></tr>
+        <tr><td>Denis Mathis Ghislain</td><td>XOR encryption and message integrity</td><td>Co-leader</td></tr>
+        <tr><td>Yadav Roshan Kumar</td><td>Message retry task and backoff logic</td><td>-</td></tr>
+        <tr><td>Mureithi Alvin Kinyua</td><td>Logger task and testing</td><td>-</td></tr>
+        <tr><td>Harneet Kaur</td><td>Sender and Receiver tasks</td><td>Meeting note taker</td></tr>
+        <tr><td>Le Huu Duy</td><td>Message types (Normal, Emergency, System) and priority scheduling</td><td>Presentation maker</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="schedule" class="alt">
+  <div class="wrap">
+    <h2>Schedule</h2>
+    <div class="tablewrap" style="margin-top:24px">
+      <table>
+        <tr><th>Week</th><th>Date</th><th>Plan</th></tr>
+        <tr><td>Week 11</td><td>11/10</td><td>Proposal presentation; set up GitHub, Notion, simulator; finish design</td></tr>
+        <tr><td>Week 12</td><td>11/17</td><td>Create tasks and queues; message types and priorities; first working flow</td></tr>
+        <tr><td>Week 13</td><td>11/24</td><td>Progress presentation; retry and backoff; logger task</td></tr>
+        <tr><td>Week 14</td><td>12/1</td><td>XOR encryption; integration and tests; delay and backlog experiments</td></tr>
+        <tr><td>Week 15</td><td>12/8</td><td>Final tests and demo; completion presentation; GitHub and Notion check</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="references">
+  <div class="wrap">
+    <h2>References</h2>
+    <ul style="margin-top:24px">
+      <li><a href="https://www.freertos.org/">FreeRTOS website</a></li>
+      <li>Mastering the FreeRTOS Real Time Kernel: A Hands-On Tutorial Guide, and its companion source code</li>
+      <li>FreeRTOS Reference Manual</li>
+      <li>Operating Systems textbook (Life and Power Press)</li>
+      <li>Lecture slides: Process, Thread, Concurrency, Processor Scheduling</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <strong>PriorityLink</strong> &middot; Team 3 Signal Guardian &middot; OS PBL class, Task 1.
+    <!-- TODO: add links to the repository, slides and final demo -->
+  </div>
+</footer>
+
+<script>
+(function () {
+  var queue = [];
+  var nextId = 1;
+  var rank = { E: 0, S: 1, N: 2 };
+
+  function chips(el, list) {
+    el.innerHTML = "";
+    list.forEach(function (m) {
+      var s = document.createElement("span");
+      s.className = "chip " + m.t;
+      s.textContent = m.t + m.id;
+      el.appendChild(s);
+    });
+  }
+  function add(t, n) {
+    for (var i = 0; i < n; i++) queue.push({ t: t, id: nextId++ });
+    chips(document.getElementById("arrival"), queue);
+    document.getElementById("fifo").innerHTML = "";
+    document.getElementById("prio").innerHTML = "";
+    document.getElementById("verdict").textContent = "Press Process messages.";
+  }
+  function run() {
+    if (!queue.length) { document.getElementById("verdict").textContent = "Add some messages first."; return; }
+    var fifo = queue.slice();
+    var prio = queue.slice().sort(function (a, b) {
+      return rank[a.t] - rank[b.t] || a.id - b.id;
+    });
+    chips(document.getElementById("fifo"), fifo);
+    chips(document.getElementById("prio"), prio);
+    var firstE = function (l) { for (var i = 0; i < l.length; i++) if (l[i].t === "E") return i + 1; return 0; };
+    var a = firstE(fifo), b = firstE(prio);
+    var v = document.getElementById("verdict");
+    if (!a) { v.textContent = "No Emergency message in the queue. Add one to see the difference."; return; }
+    v.innerHTML = "Without priorities, the Emergency message is processed <span class=\"pos\">#" + a + "</span>. With PriorityLink it is processed <span class=\"pos\">#" + b + "</span>.";
+  }
+  function reset() {
+    queue = []; nextId = 1;
+    ["arrival", "fifo", "prio"].forEach(function (id) { document.getElementById(id).innerHTML = ""; });
+    document.getElementById("verdict").textContent = "Add some messages to start.";
+  }
+  document.getElementById("addN").onclick = function () { add("N", 10); };
+  document.getElementById("addS").onclick = function () { add("S", 1); };
+  document.getElementById("addE").onclick = function () { add("E", 1); };
+  document.getElementById("run").onclick = run;
+  document.getElementById("reset").onclick = reset;
+})();
+</script>
+</body>
+</html>
