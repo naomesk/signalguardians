@@ -61,11 +61,13 @@ This layout is a proposal. Adjust it to match the real repository.
 ```
 ├── README.md
 ├── docs/
-│   ├── functional-requirements.md
-│   ├── system-architecture.md
-│   ├── hld.md
-│   ├── lld.md
-│   └── test-report.md
+|   ├── index.html
+|   ├── design/
+│       ├── functional-requirements.md
+│       ├── system-architecture.md
+│       ├── hld.md
+│       ├── lld.md
+│       └── test-report.md
 ├── src/
 │   ├── main.c              # project skeleton: creates tasks and queue
 │   ├── message.h / .c      # message structure and the three types
@@ -89,6 +91,9 @@ This layout is a proposal. Adjust it to match the real repository.
 | Logger task and testing | Mureithi Alvin Kinyua |
 | Sender and receiver tasks | Harneet Kaur |
 | Message types and priority scheduling | Le Huu Duy |
+
+## Landing page (demo site)
+The landing page lives in docs/index.html. It is a single self-contained file (HTML, CSS and a little JavaScript) that covers the problem, solution, architecture, a small priority-ordering illustration, evaluation targes, team and schedule. 
 
 ## Building and running
 
