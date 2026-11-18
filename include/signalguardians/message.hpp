@@ -1,10 +1,12 @@
 #pragma once
 
 #include <string_view>
+#include <type_traits>
 
 namespace signalguardians {
 
 enum class MessageType {
+    // GENERAL is called Normal in the team overview; URGENT is Emergency.
     GENERAL = 1,
     SYSTEM = 2,
     URGENT = 3
@@ -19,6 +21,9 @@ struct Message {
     char payload[PayloadCapacity];
     int retryCount;
 };
+
+static_assert(std::is_trivially_copyable_v<Message>, "Messages must support FreeRTOS queue copying");
+static_assert(std::is_standard_layout_v<Message>, "Messages must retain a simple data layout");
 
 class MessageCreator {
 public:
