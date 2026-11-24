@@ -97,6 +97,19 @@ tr:last-child td { border-bottom: 0; }
 .panel-title { font-weight: 700; margin: 0 0 8px; }
 .pos { font-weight: 700; color: var(--coral); }
 
+
+/* Progress and embeds */
+.meter { margin-bottom: 18px; }
+.mlabel { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 6px; }
+.mbar { background: var(--line); border-radius: 999px; height: 14px; overflow: hidden; }
+.mbar i { display: block; height: 100%; background: var(--coral); border-radius: 999px; }
+.doc iframe { width: 100%; height: 480px; border: 1px solid var(--line); border-radius: 10px; background: #fff; margin-top: 10px; }
+.doc.live .pending { display: none; }
+.pending { color: var(--muted); font-size: .9rem; margin: 10px 0 0; }
+.embedslot:empty { display: none; }
+.openlink { display: inline-block; margin-top: 8px; font-weight: 700; }
+.openlink[hidden] { display: none; }
+
 /* Footer */
 footer { background: var(--navy-dark); color: #cdd8f3; padding: 36px 0; font-size: .95rem; }
 footer a { color: #fff; }
@@ -111,6 +124,8 @@ footer a { color: #fff; }
       <a href="#problem">Problem</a>
       <a href="#solution">Solution</a>
       <a href="#how">How it works</a>
+      <a href="#progress">Progress</a>
+      <a href="#design">Design</a>
       <a href="#demo">Demo</a>
       <a href="#evaluation">Evaluation</a>
       <a href="#team">Team</a>
@@ -129,8 +144,7 @@ footer a { color: #fff; }
     <p class="lead">Making sure the most critical message always gets through. A priority-based communication system built on FreeRTOS.</p>
     <a class="btn primary" href="#demo">Try the idea</a>
     <a class="btn ghost" href="#how">How it works</a>
-    <!-- TODO: replace with the real repository link -->
-    <a class="btn ghost" href="https://github.com/">GitHub repository</a>
+    <a class="btn ghost" href="https://github.com/naomesk/signalguardians">GitHub repository</a>
   </div>
 </section>
 
@@ -200,7 +214,7 @@ footer a { color: #fff; }
 <section id="how">
   <div class="wrap">
     <h2>How it works</h2>
-    <p class="sub">Senders put messages into a shared queue. The receiver always takes the most urgent one first. Failed deliveries are retried, and every step is logged.</p>
+    <p class="sub">Senders put messages into one queue per priority. The receiver always takes the most urgent one first. Failed deliveries are retried with backoff, and every step is logged.</p>
     <div class="card">
       <div class="flow">
         <div class="senders">
@@ -209,9 +223,9 @@ footer a { color: #fff; }
           <div class="node">Normal Sender<small>lowest priority</small></div>
         </div>
         <div class="arrow">&rarr;</div>
-        <div class="node">Message Queue<small>length and backlog observed</small></div>
+        <div class="node">Three Priority Queues<small>one per priority, 16 slots each</small></div>
         <div class="arrow">&rarr;</div>
-        <div class="node">Receiver Task<small>processes by priority</small></div>
+        <div class="node">Receiver Task<small>highest priority first</small></div>
         <div class="arrow">&rarr;</div>
         <div class="node">Logger Task<small>timestamped log output</small></div>
       </div>
@@ -219,12 +233,89 @@ footer a { color: #fff; }
         <div class="arrow">&#8635; delivery failed &middot; resend after backoff</div>
         <div class="node">Retry and Backoff Task</div>
       </div>
-      <p class="note">Payloads are protected with XOR encryption before queueing. Every step is logged.</p>
+      <p class="note">The sender encrypts the payload with XOR and adds a checksum before queueing; the receiver verifies the checksum, then decrypts. Normal messages are only delayed under overload, never dropped. Every step is logged.</p>
     </div>
     <div class="grid g3" style="margin-top:18px">
       <div class="card"><h3>Scheduling</h3><p>Task priorities decide which task runs first.</p></div>
       <div class="card"><h3>IPC</h3><p>Queues carry messages between tasks.</p></div>
       <div class="card"><h3>Synchronization</h3><p>No lost or corrupted data.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="progress" class="alt">
+  <div class="wrap">
+    <h2>Progress</h2>
+    <p class="sub">Status at Week 13 (24 November 2026). Nothing has been measured yet: the evaluation targets below are tested in Week 14.</p>
+    <div class="card">
+      <div class="meter"><div class="mlabel"><span>Core flow: queues, senders, receiver</span><b>60%</b></div><div class="mbar"><i style="width:60%"></i></div></div>
+      <div class="meter"><div class="mlabel"><span>Retry and logging</span><b>85%</b></div><div class="mbar"><i style="width:85%"></i></div></div>
+      <div class="meter"><div class="mlabel"><span>Encryption and testing</span><b>15%</b></div><div class="mbar"><i style="width:15%"></i></div></div>
+      <p class="note">Progress is tracked per module in the team task list. Encryption and testing are scheduled for Week 14.</p>
+    </div>
+    <h3 style="margin:32px 0 12px">Status by week</h3>
+    <div class="tablewrap">
+      <table>
+        <tr><th>Week</th><th>Done</th><th>In progress</th></tr>
+        <tr><td>Week 11</td><td>Proposal deck and presentation</td><td>GitHub repo, Notion and simulator template</td></tr>
+        <tr><td>Week 12</td><td>Message types; task priority rules</td><td>Final design pages; project skeleton; senders and receiver; retry policy; log format; first working flow</td></tr>
+        <tr><td>Week 13</td><td>Progress presentation</td><td>Retry task; logger task; test plan</td></tr>
+        <tr><td>Week 14</td><td colspan="2">Upcoming: XOR encryption and checksum; integration; experiments; priority tuning</td></tr>
+        <tr><td>Week 15</td><td colspan="2">Upcoming: final tests; test report; completion presentation; GitHub and Notion check</td></tr>
+      </table>
+    </div>
+    <div class="doc" data-embed="todo" style="margin-top:24px">
+      <h3>Live task board</h3>
+      <div class="embedslot"></div>
+      <p class="pending">The live board from our Notion workspace will appear here.</p>
+      <a class="openlink" hidden target="_blank" rel="noopener">Open in Notion</a>
+    </div>
+  </div>
+</section>
+
+<section id="design">
+  <div class="wrap">
+    <h2>Final design</h2>
+    <p class="sub">The design pages are final (version 1.0, 24 November). Each module has one owner, one header file and one stub, so every module can be built and tested alone.</p>
+    <div class="tablewrap">
+      <table>
+        <tr><th>Module</th><th>What it does</th><th>Owner</th></tr>
+        <tr><td>M1 Message types</td><td>Message format, the three types, all constants in one config file</td><td>Le Huu Duy</td></tr>
+        <tr><td>M2 Queue</td><td>One queue per priority; hands out the most urgent message first</td><td>Woudneh Naomi Eskinder</td></tr>
+        <tr><td>M3 Security</td><td>XOR encryption and checksum as pure functions</td><td>Denis Mathis Ghislain</td></tr>
+        <tr><td>M4 Senders</td><td>Emergency, System and Normal sender tasks; burst generator</td><td>Harneet Kaur</td></tr>
+        <tr><td>M5 Receiver</td><td>Takes messages by priority, verifies, decrypts, injects test failures</td><td>Harneet Kaur</td></tr>
+        <tr><td>M6 Retry</td><td>Resends failed messages with backoff; logs a failure after the last retry</td><td>Yadav Roshan Kumar</td></tr>
+        <tr><td>M7 Logger</td><td>Timestamped event log with queue lengths and stack marks</td><td>Mureithi Alvin Kinyua</td></tr>
+        <tr><td>M8 Application</td><td>Creates all tasks and runs the integration</td><td>Woudneh Naomi Eskinder</td></tr>
+      </table>
+    </div>
+    <h3 style="margin:32px 0 12px">Key decisions</h3>
+    <div class="grid g3">
+      <div class="card"><h3>Queues</h3><p>One queue per priority, 16 messages each, 32-byte payloads. Normal messages are delayed under overload, never dropped.</p></div>
+      <div class="card"><h3>Retry</h3><p>Up to 3 retries, waiting 10, 20 and 40 ms. Emergency messages are retried immediately. A message that still fails is logged.</p></div>
+      <div class="card"><h3>Security and testing</h3><p>Encrypt, then checksum, at the sender; verify, then decrypt, at the receiver. Failures are simulated with a random drop at the receiver.</p></div>
+    </div>
+    <h3 style="margin:32px 0 12px">Task priorities</h3>
+    <div class="tablewrap">
+      <table>
+        <tr><th>Task</th><th>Priority</th></tr>
+        <tr><td>Emergency sender, Receiver</td><td>5</td></tr>
+        <tr><td>System sender</td><td>4</td></tr>
+        <tr><td>Retry</td><td>3</td></tr>
+        <tr><td>Normal sender</td><td>2</td></tr>
+        <tr><td>Logger</td><td>1</td></tr>
+      </table>
+    </div>
+    <p class="note">Starting values. They may be tuned in Week 14 with the experiment results.</p>
+
+    <h3 style="margin:36px 0 12px">Design pages</h3>
+    <div class="grid g2">
+      <div class="card doc" data-embed="fr"><h3>Functional Requirements</h3><p>13 requirements, each assigned to one module, and the four measurable targets.</p><div class="embedslot"></div><p class="pending">Live view coming soon.</p><a class="openlink" hidden target="_blank" rel="noopener">Open in Notion</a></div>
+      <div class="card doc" data-embed="hld"><h3>High-Level Design</h3><p>Modules, independence rules, and who decides at each module overlap.</p><div class="embedslot"></div><p class="pending">Live view coming soon.</p><a class="openlink" hidden target="_blank" rel="noopener">Open in Notion</a></div>
+      <div class="card doc" data-embed="arch"><h3>System Architecture</h3><p>Three layers, component diagram, message flow and task priorities.</p><div class="embedslot"></div><p class="pending">Live view coming soon.</p><a class="openlink" hidden target="_blank" rel="noopener">Open in Notion</a></div>
+      <div class="card doc" data-embed="lld"><h3>Low-Level Design</h3><p>Message structure, function signatures, log format and the test for each module.</p><div class="embedslot"></div><p class="pending">Live view coming soon.</p><a class="openlink" hidden target="_blank" rel="noopener">Open in Notion</a></div>
+      <div class="card doc" data-embed="rr"><h3>Roles and responsibilities</h3><p>What each member builds, what they can start with, and when they are done.</p><div class="embedslot"></div><p class="pending">Live view coming soon.</p><a class="openlink" hidden target="_blank" rel="noopener">Open in Notion</a></div>
     </div>
   </div>
 </section>
@@ -265,7 +356,7 @@ footer a { color: #fff; }
 <section id="evaluation">
   <div class="wrap">
     <h2>How we evaluate it</h2>
-    <p class="sub">These targets are proposals and will be tuned after the first experiments. Results will be added here.</p>
+    <p class="sub">These targets are fixed. They have not been measured yet; results will be added here after the Week 14 experiments.</p>
     <div class="tablewrap">
       <table>
         <tr><th>Area</th><th>Target</th><th>How we measure</th></tr>
@@ -302,7 +393,7 @@ footer a { color: #fff; }
       <div class="card">
         <h3>Constraints</h3>
         <ul>
-          <li>FreeRTOS on a simulator, no real hardware</li>
+          <li>FreeRTOS on the Windows MSVC simulator, no real hardware</li>
           <li>Simulated messages and link, no real radio</li>
           <li>XOR is a demo cipher, not flight-grade security</li>
         </ul>
@@ -317,13 +408,13 @@ footer a { color: #fff; }
     <p class="sub">Six members, each owning a part of the system.</p>
     <div class="tablewrap">
       <table>
-        <tr><th>Member</th><th>Technical role (Task 1)</th><th>Sub-role</th></tr>
-        <tr><td>Woudneh Naomi Eskinder</td><td>Queue-based communication; Integration</td><td>Leader</td></tr>
-        <tr><td>Denis Mathis Ghislain</td><td>XOR encryption and message integrity</td><td>Co-leader</td></tr>
-        <tr><td>Yadav Roshan Kumar</td><td>Message retry task and backoff logic</td><td>-</td></tr>
-        <tr><td>Mureithi Alvin Kinyua</td><td>Logger task and testing</td><td>-</td></tr>
-        <tr><td>Harneet Kaur</td><td>Sender and Receiver tasks</td><td>Meeting note taker</td></tr>
-        <tr><td>Le Huu Duy</td><td>Message types (Normal, Emergency, System) and priority scheduling</td><td>Presentation maker</td></tr>
+        <tr><th>Member</th><th>Technical role (Task 1)</th><th>Modules</th><th>Sub-role</th></tr>
+        <tr><td>Woudneh Naomi Eskinder</td><td>Queue-based communication; Integration</td><td>M2, M8</td><td>Leader</td></tr>
+        <tr><td>Denis Mathis Ghislain</td><td>XOR encryption and message integrity</td><td>M3</td><td>Co-leader</td></tr>
+        <tr><td>Yadav Roshan Kumar</td><td>Message retry task and backoff logic</td><td>M6</td><td>-</td></tr>
+        <tr><td>Mureithi Alvin Kinyua</td><td>Logger task and testing</td><td>M7</td><td>-</td></tr>
+        <tr><td>Harneet Kaur</td><td>Sender and Receiver tasks; failure injection</td><td>M4, M5</td><td>Meeting note taker</td></tr>
+        <tr><td>Le Huu Duy</td><td>Message types, constants and task priorities</td><td>M1</td><td>Presentation maker</td></tr>
       </table>
     </div>
   </div>
@@ -334,12 +425,12 @@ footer a { color: #fff; }
     <h2>Schedule</h2>
     <div class="tablewrap" style="margin-top:24px">
       <table>
-        <tr><th>Week</th><th>Date</th><th>Plan</th></tr>
-        <tr><td>Week 11</td><td>11/10</td><td>Proposal presentation; set up GitHub, Notion, simulator; finish design</td></tr>
-        <tr><td>Week 12</td><td>11/17</td><td>Create tasks and queues; message types and priorities; first working flow</td></tr>
-        <tr><td>Week 13</td><td>11/24</td><td>Progress presentation; retry and backoff; logger task</td></tr>
-        <tr><td>Week 14</td><td>12/1</td><td>XOR encryption; integration and tests; delay and backlog experiments</td></tr>
-        <tr><td>Week 15</td><td>12/8</td><td>Final tests and demo; completion presentation; GitHub and Notion check</td></tr>
+        <tr><th>Week</th><th>Date</th><th>Plan</th><th>Status</th></tr>
+        <tr><td>Week 11</td><td>11/10</td><td>Proposal presentation; set up GitHub, Notion, simulator; finish design</td><td>Proposal done; setup finishing</td></tr>
+        <tr><td>Week 12</td><td>11/17</td><td>Create tasks and queues; message types and priorities; first working flow</td><td>In progress</td></tr>
+        <tr><td>Week 13</td><td>11/24</td><td>Progress presentation; retry and backoff; logger task</td><td>Presentation done; rest in progress</td></tr>
+        <tr><td>Week 14</td><td>12/1</td><td>XOR encryption; integration and tests; delay and backlog experiments</td><td>Upcoming</td></tr>
+        <tr><td>Week 15</td><td>12/8</td><td>Final tests and demo; completion presentation; GitHub and Notion check</td><td>Upcoming</td></tr>
       </table>
     </div>
   </div>
@@ -363,10 +454,36 @@ footer a { color: #fff; }
 <footer>
   <div class="wrap">
     <strong>PriorityLink</strong> &middot; Team 3 Signal Guardian &middot; OS PBL class, Task 1.
-    <!-- TODO: add links to the repository, slides and final demo -->
+    <br><a href="https://github.com/naomesk/signalguardians">GitHub repository</a>
   </div>
 </footer>
 
+<script>
+/* Notion embeds. In Notion, open each page, choose Share > Publish > Publish to web,
+   copy the public link, and paste it between the quotes below. Leave "" to hide an embed. */
+var NOTION = {
+  todo: "",   // Team To-Do List (published board view)
+  fr:   "",   // Functional Requirements
+  hld:  "",   // High-Level Design
+  arch: "",   // System Architecture
+  lld:  "",   // Low-Level Design
+  rr:   ""    // R&R
+};
+(function () {
+  Array.prototype.forEach.call(document.querySelectorAll("[data-embed]"), function (box) {
+    var url = NOTION[box.getAttribute("data-embed")];
+    if (!url) return;
+    var f = document.createElement("iframe");
+    f.src = url;
+    f.loading = "lazy";
+    f.title = (box.querySelector("h3") || {}).textContent || "Notion page";
+    box.querySelector(".embedslot").appendChild(f);
+    var a = box.querySelector(".openlink");
+    a.href = url; a.hidden = false;
+    box.classList.add("live");
+  });
+})();
+</script>
 <script>
 (function () {
   var queue = [];
