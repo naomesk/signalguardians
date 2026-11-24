@@ -283,11 +283,12 @@ footer a { color: #fff; }
         <tr><td>M1 Message types</td><td>Message format, the three types, all constants in one config file</td><td>Le Huu Duy</td></tr>
         <tr><td>M2 Queue</td><td>One queue per priority; hands out the most urgent message first</td><td>Woudneh Naomi Eskinder</td></tr>
         <tr><td>M3 Security</td><td>XOR encryption and checksum as pure functions</td><td>Denis Mathis Ghislain</td></tr>
-        <tr><td>M4 Senders</td><td>Emergency, System and Normal sender tasks; burst generator</td><td>Harneet Kaur</td></tr>
+        <tr><td>M4 Senders</td><td>Emergency, System and Normal sender tasks; burst generator; demo command task</td><td>Harneet Kaur</td></tr>
         <tr><td>M5 Receiver</td><td>Takes messages by priority, verifies, decrypts, injects test failures</td><td>Harneet Kaur</td></tr>
         <tr><td>M6 Retry</td><td>Resends failed messages with backoff; logs a failure after the last retry</td><td>Yadav Roshan Kumar</td></tr>
-        <tr><td>M7 Logger</td><td>Timestamped event log with queue lengths and stack marks</td><td>Mureithi Alvin Kinyua</td></tr>
+        <tr><td>M7 Logger</td><td>Timestamped event log (text and JSON) with queue lengths and stack marks</td><td>Mureithi Alvin Kinyua</td></tr>
         <tr><td>M8 Application</td><td>Creates all tasks and runs the integration</td><td>Woudneh Naomi Eskinder</td></tr>
+        <tr><td>M9 Demo</td><td>Bridge program and viewer page for the live demo and replay; runs outside FreeRTOS</td><td>Le Huu Duy (proposed)</td></tr>
       </table>
     </div>
     <h3 style="margin:32px 0 12px">Key decisions</h3>
@@ -302,7 +303,7 @@ footer a { color: #fff; }
         <tr><th>Task</th><th>Priority</th></tr>
         <tr><td>Emergency sender, Receiver</td><td>5</td></tr>
         <tr><td>System sender</td><td>4</td></tr>
-        <tr><td>Retry</td><td>3</td></tr>
+        <tr><td>Retry, Command task (demo only)</td><td>3</td></tr>
         <tr><td>Normal sender</td><td>2</td></tr>
         <tr><td>Logger</td><td>1</td></tr>
       </table>
@@ -311,10 +312,11 @@ footer a { color: #fff; }
 
     <h3 style="margin:36px 0 12px">Design pages</h3>
     <div class="grid g2">
-      <div class="card doc" data-embed="fr"><h3>Functional Requirements</h3><p>13 requirements, each assigned to one module, and the four measurable targets.</p><div class="embedslot"></div><p class="pending">Live view coming soon.</p><a class="openlink" hidden target="_blank" rel="noopener">Open in Notion</a></div>
+      <div class="card doc" data-embed="fr"><h3>Functional Requirements</h3><p>17 requirements, each assigned to one module, and the four measurable targets.</p><div class="embedslot"></div><p class="pending">Live view coming soon.</p><a class="openlink" hidden target="_blank" rel="noopener">Open in Notion</a></div>
       <div class="card doc" data-embed="hld"><h3>High-Level Design</h3><p>Modules, independence rules, and who decides at each module overlap.</p><div class="embedslot"></div><p class="pending">Live view coming soon.</p><a class="openlink" hidden target="_blank" rel="noopener">Open in Notion</a></div>
       <div class="card doc" data-embed="arch"><h3>System Architecture</h3><p>Three layers, component diagram, message flow and task priorities.</p><div class="embedslot"></div><p class="pending">Live view coming soon.</p><a class="openlink" hidden target="_blank" rel="noopener">Open in Notion</a></div>
       <div class="card doc" data-embed="lld"><h3>Low-Level Design</h3><p>Message structure, function signatures, log format and the test for each module.</p><div class="embedslot"></div><p class="pending">Live view coming soon.</p><a class="openlink" hidden target="_blank" rel="noopener">Open in Notion</a></div>
+      <div class="card doc" data-embed="demo"><h3>Demo Plan</h3><p>The live flood test with an audience-triggered Emergency message, event format, script and backup plan.</p><div class="embedslot"></div><p class="pending">Live view coming soon.</p><a class="openlink" hidden target="_blank" rel="noopener">Open in Notion</a></div>
       <div class="card doc" data-embed="rr"><h3>Roles and responsibilities</h3><p>What each member builds, what they can start with, and when they are done.</p><div class="embedslot"></div><p class="pending">Live view coming soon.</p><a class="openlink" hidden target="_blank" rel="noopener">Open in Notion</a></div>
     </div>
   </div>
@@ -323,7 +325,14 @@ footer a { color: #fff; }
 <section id="demo" class="alt">
   <div class="wrap">
     <h2>Demo</h2>
-    <p class="sub">An illustration of the idea, not the FreeRTOS run. Add messages, then process them to see the order with and without priorities. The real simulator demo will be linked here later.</p>
+    <p class="sub">Our final demo is a live flood test on the FreeRTOS simulator. Below is the plan, then a small illustration of the idea (not the FreeRTOS run) that you can try now.</p>
+    <div class="grid g3" style="margin-bottom:28px">
+      <div class="card"><h3>1. Flood</h3><p>Press Start flood: 100 Normal messages pile up in the Normal queue lane.</p></div>
+      <div class="card"><h3>2. Audience trigger</h3><p>A volunteer presses Send Emergency. The Emergency message jumps the Normal lane, and the page shows its delay in ms and how many Normal messages it skipped.</p></div>
+      <div class="card"><h3>3. Real data only</h3><p>The simulator prints one JSON line per event and a small bridge streams them to the page. Delays come from the simulator's tick timestamps. A recorded run can be replayed as a backup.</p></div>
+    </div>
+    <p class="note" style="margin:0 0 24px">Status: planned for Week 14. Owners: JSON log (Alvin), command task (Harneet), bridge and viewer (Le Huu Duy, proposed). Full plan in the Demo Plan page.</p>
+    <h3 style="margin:0 0 12px">Try the idea</h3>
     <div class="controls">
       <button type="button" id="addN">Add 10 Normal</button>
       <button type="button" id="addS">Add System</button>
@@ -429,8 +438,8 @@ footer a { color: #fff; }
         <tr><td>Week 11</td><td>11/10</td><td>Proposal presentation; set up GitHub, Notion, simulator; finish design</td><td>Proposal done; setup finishing</td></tr>
         <tr><td>Week 12</td><td>11/17</td><td>Create tasks and queues; message types and priorities; first working flow</td><td>In progress</td></tr>
         <tr><td>Week 13</td><td>11/24</td><td>Progress presentation; retry and backoff; logger task</td><td>Presentation done; rest in progress</td></tr>
-        <tr><td>Week 14</td><td>12/1</td><td>XOR encryption; integration and tests; delay and backlog experiments</td><td>Upcoming</td></tr>
-        <tr><td>Week 15</td><td>12/8</td><td>Final tests and demo; completion presentation; GitHub and Notion check</td><td>Upcoming</td></tr>
+        <tr><td>Week 14</td><td>12/1</td><td>XOR encryption; integration and tests; delay and backlog experiments; demo build (JSON log, command task, bridge, viewer)</td><td>Upcoming</td></tr>
+        <tr><td>Week 15</td><td>12/8</td><td>Record backup run, rehearse demo twice, final tests and demo; completion presentation; GitHub and Notion check</td><td>Upcoming</td></tr>
       </table>
     </div>
   </div>
@@ -467,7 +476,8 @@ var NOTION = {
   hld:  "",   // High-Level Design
   arch: "",   // System Architecture
   lld:  "",   // Low-Level Design
-  rr:   ""    // R&R
+  rr:   "",   // R&R
+  demo: ""    // Demo Plan
 };
 (function () {
   Array.prototype.forEach.call(document.querySelectorAll("[data-embed]"), function (box) {
