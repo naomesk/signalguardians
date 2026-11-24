@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{2d158ff4-7dee-440f-9b13-72da29da1518}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' &gt;= '18.0'">v145</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' &lt; '18.0'">v143</PlatformToolset>
+    <UseDebugLibraries Condition="'$(Configuration)' == 'Debug'">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="'$(Configuration)' == 'Release'">false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <FreeRTOSKernelDir Condition="'$(FreeRTOSKernelDir)' == '' and Exists('$(MSBuildProjectDirectory)\FreeRTOS-Kernel\tasks.c')">$(MSBuildProjectDirectory)\FreeRTOS-Kernel</FreeRTOSKernelDir>
+    <OutDir>$(MSBuildProjectDirectory)\out\vs\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(OutDir)obj\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>include;config;$(FreeRTOSKernelDir)\include;$(FreeRTOSKernelDir)\portable\MSVC-MingW;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\main.c" />
+    <ClCompile Include="src\message.c" />
+    <ClCompile Include="src\message_queue.c" />
+    <ClCompile Include="src\scheduling.c" />
+    <ClCompile Include="$(FreeRTOSKernelDir)\tasks.c" />
+    <ClCompile Include="$(FreeRTOSKernelDir)\queue.c" />
+    <ClCompile Include="$(FreeRTOSKernelDir)\list.c" />
+    <ClCompile Include="$(FreeRTOSKernelDir)\portable\MemMang\heap_4.c" />
+    <ClCompile Include="$(FreeRTOSKernelDir)\portable\MSVC-MingW\port.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="config\FreeRTOSConfig.h" />
+    <ClInclude Include="include\signalguardians\message.h" />
+    <ClInclude Include="include\signalguardians\message_queue.h" />
+    <ClInclude Include="include\signalguardians\scheduling.h" />
+  </ItemGroup>
+  <Target Name="CheckFreeRTOSKernel" BeforeTargets="PrepareForBuild">
+    <Error Condition="!Exists('$(FreeRTOSKernelDir)\portable\MSVC-MingW\port.c')"
+           Text="Set FreeRTOSKernelDir to the FreeRTOS-Kernel folder from the Win32 simulator examples, or place that folder beside this project." />
+  </Target>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>
