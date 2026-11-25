@@ -1,24 +1,4 @@
-/*
- * retry.c - M6 Retry and backoff
- *
- * Retry_Report(msg)  [called by the Receiver, non-blocking]
- *   - msg->retries == MAX_RETRIES : slot marked FAILED  (task logs EV_FAILED, stop)
- *   - otherwise retries++ and the due tick is set:
- *       Emergency          : now            (immediate)
- *       System / Normal    : now + BACKOFF_BASE_MS << (retries-1)   = 10, 20, 40 ms
- *
- * Retry task (PRIO_RETRY)
- *   - holds up to RETRY_PENDING_MAX (16) messages, each with its own due tick
- *   - sleeps only until the EARLIEST due tick (or a notification from Retry_Report),
- *     so one long backoff never delays another pending retry
- *   - when due: Queue_Send(msg) (already sealed), then Log_Event(EV_RETRIED)
- *   - the ONLY place that logs EV_FAILED / EV_RETRIED
- *   - a full class queue is overload, not a failed retry: the message is parked
- *     again (RETRY_REQUEUE_DELAY_MS) without using up a retry and is not dropped
- *
- * Every wait has a timeout; nothing blocks forever. No failure injection here
- * (that lives in the Receiver, M5).
- */
+
 
 #include <stdbool.h>
 #include <stdint.h>
