@@ -1,0 +1,6 @@
+#define RETRY_PENDING_MAX         16
+#define RETRY_BACKOFF_CAP_MS      1000
+#define RETRY_SEND_TIMEOUT_MS     0
+#define RETRY_REQUEUE_DELAY_MS    5
+#define RETRY_IDLE_WAIT_MS        50
+#define RETRY_STACK_WORDS         (configMINIMAL_STACK_SIZE * 2)
